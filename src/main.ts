@@ -31,8 +31,17 @@ async function createToken({ roomName, participantName }: TokenRequest) {
 const app = express();
 const port = 3000;
 
+// Configure CORS with explicit options
+const corsOptions = {
+  origin: true, // Allow all origins
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
+
 // Enable CORS for all origins
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Enable JSON body parsing
 app.use(express.json());
