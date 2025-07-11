@@ -32,10 +32,40 @@ const app = express();
 const port = 3000;
 
 // Configure CORS with explicit options
-const corsOptions = {
-  origin: true, // Allow all origins
+const corsOptions: cors.CorsOptions = {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'https://bolt.new',
+      'https://*.bolt.new',
+      'https://*.webcontainer-api.io',
+      'http://localhost:3000',
+      'http://localhost:3001',
+    ];
+    
+    // Check if the origin matches any allowed pattern
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (allowed.includes('*')) {
+        // Handle wildcard subdomains
+        const regex = new RegExp('^' + allowed.replace('*', '.*') + '$');
+        return regex.test(origin);
+      }
+      return allowed === origin;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      // For now, allow all origins in development
+      // You can change this to callback(new Error('Not allowed by CORS')) in production
+      callback(null, true);
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
@@ -45,6 +75,9 @@ app.use(cors(corsOptions));
 
 // Enable JSON body parsing
 app.use(express.json());
+
+// Handle preflight requests explicitly
+app.options('/createToken', cors(corsOptions));
 
 app.post('/createToken', async (req, res) => {
   const { roomName = 'demo-room', participantName = 'demo-user' } = req.body ?? {};
