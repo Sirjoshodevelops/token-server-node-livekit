@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import cors from 'cors';
 import { AccessToken } from 'livekit-server-sdk';
 
 type TokenRequest = {
@@ -29,6 +30,12 @@ async function createToken({ roomName, participantName }: TokenRequest) {
 
 const app = express();
 const port = 3000;
+
+// Enable CORS for all origins
+app.use(cors());
+
+// Enable JSON body parsing
+app.use(express.json());
 
 app.post('/createToken', async (req, res) => {
   const { roomName = 'demo-room', participantName = 'demo-user' } = req.body ?? {};
