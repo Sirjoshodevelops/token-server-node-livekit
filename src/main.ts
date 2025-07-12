@@ -51,9 +51,16 @@ app.post('/createToken', async (req, res) => {
     const { roomName = 'demo-room', participantName = 'demo-user' } = req.body ?? {};
     const token = await createToken({ roomName, participantName });
     
-    // Ensure CORS headers are set on the response
-    res.header('Access-Control-Allow-Origin', '*');
-    res.send(token);
+    // Get LiveKit server URL from environment or use default
+    const serverUrl = process.env.LIVEKIT_SERVER_URL || 'wss://your-livekit-server.livekit.cloud';
+    
+    // Return JSON object with connection details
+    res.json({
+      serverUrl: serverUrl,
+      roomName: roomName,
+      participantName: participantName,
+      participantToken: token
+    });
   } catch (error) {
     console.error('Error creating token:', error);
     res.status(500).json({ error: 'Failed to create token' });
